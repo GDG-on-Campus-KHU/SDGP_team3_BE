@@ -1,0 +1,41 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: check-yaml
+    -   id: check-added-large-files
+
+-   repo: https://github.com/psf/black
+    rev: 25.1.0
+    hooks:
+    -   id: black
+
+-   repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+    -   id: isort
+        args: ["--profile", "black"]
+
+-   repo: https://github.com/pycqa/pylint
+    rev: v3.3.6
+    hooks:
+    -   id: pylint
+        additional_dependencies: ["pylint>=3.3.6"]
+        args: [
+            "--rcfile=pyproject.toml",  # 설정 파일 지정
+            "--disable=import-error",   # pre-commit 실행 시 일부 import 오류 방지
+        ]
+
+-   repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.15.0
+    hooks:
+    -   id: mypy
+        additional_dependencies: [
+            "mypy>=1.15.0",
+            # 필요한 경우 타입 스텁 추가
+            # "types-requests",
+            # "pydantic",  # 사용하는 경우
+        ]
+        args: ["--config-file=pyproject.toml"]
