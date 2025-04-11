@@ -7,7 +7,17 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-
+fastapi = "^0.104.1"
+uvicorn = {extras = ["standard"], version = "^0.23.2"}
+psycopg2-binary = "^2.9.9"
+pydantic = {extras = ["email"], version = "^2.4.2"}
+pydantic-settings = "^2.1.0"
+python-dotenv = "^1.0.0"
+asyncpg = "^0.28.0"
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+python-multipart = "^0.0.6"
+email-validator = "^2.1.0.post1"
 
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"
@@ -15,12 +25,27 @@ mypy = "^1.15.0"
 pylint = "^3.3.6"
 isort = "^6.0.1"
 pre-commit = "^4.2.0"
+autoflake = "^2.2.1"
+flake8 = "^7.0.0"
+bandit = "^1.7.7"
+pydocstyle = "^6.3.0"
+commitizen = "^3.14.1"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.3"
+pytest-asyncio = "^0.21.1"
+pytest-cov = "^4.1.0"
+httpx = "^0.25.1"
+aiosqlite = "^0.19.0"
+fakeredis = "^2.20.1"
+freezegun = "^1.4.0"
+pytest-mock = "^3.12.0"
 
 [tool.black]
-line-length = 88         
+line-length = 88
 target-version = ['py39']
-include = '\.pyi?$'      
-exclude = '''            
+include = '\.pyi?$'
+exclude = '''
 /(
     \.eggs
   | \.git
@@ -34,71 +59,99 @@ exclude = '''
   | dist
 )/
 '''
-skip-string-normalization = false  
-skip-magic-trailing-comma = false  
-preview = false   
+skip-string-normalization = false
+skip-magic-trailing-comma = false
+preview = false
 
 [tool.mypy]
-python_version = "3.9"               
-disallow_untyped_defs = true         
-disallow_incomplete_defs = true      
-check_untyped_defs = true            
-disallow_untyped_decorators = true   
-no_implicit_optional = true          
-strict_optional = true               
-warn_redundant_casts = true          
-warn_unused_ignores = true           
-warn_return_any = true               
-warn_unused_configs = true           
-plugins = ["pydantic.mypy"]          
+python_version = "3.9"
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+ignore_missing_imports = true
+strict_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+warn_unused_configs = true
 
 [[tool.mypy.overrides]]
-module = "tests.*"                   
-disallow_untyped_defs = false        
+module = "tests.*"
+disallow_untyped_defs = false
 disallow_incomplete_defs = false
 
+[[tool.mypy.overrides]]
+module = "app.controllers.*"
+disallow_untyped_decorators = false
+
+[[tool.mypy.overrides]]
+module = "app.main"
+disallow_untyped_decorators = false
+
 [tool.pylint.main]
-ignore = ["CVS", ".git", ".venv"]        
-jobs = 0                                 
-persistent = true                        
+ignore = ["CVS", ".git", ".venv"]
+jobs = 0
+persistent = true
 
 [tool.pylint.messages_control]
-disable = [                               
-    "missing-docstring",                  
-    "invalid-name",                       
-    "too-few-public-methods",             
-    "fixme",                              
+disable = [
+    "missing-docstring",
+    "invalid-name",
+    "too-few-public-methods",
+    "fixme",
 ]
-enable = [                                
-    "useless-suppression",                
+enable = [
+    "useless-suppression",
 ]
 
 [tool.pylint.reports]
-output-format = "text"                    
-reports = false                           
+output-format = "text"
+reports = false
 
 [tool.pylint.format]
-max-line-length = 88                      
-ignore-long-lines = "^\\s*(# )?.*$"   
-single-line-if-stmt = false           
+max-line-length = 88
+ignore-long-lines = "^\\s*(# )?.*$"
+single-line-if-stmt = false
 
 [tool.pylint.design]
-max-args = 8                          
+max-args = 8
 
 [tool.pylint.variables]
-init-import = false                   
-dummy-variables-rgx = "_$|dummy"      
-ignored-argument-names = "_.*"        
+init-import = false
+dummy-variables-rgx = "_$|dummy"
+ignored-argument-names = "_.*"
 
 [tool.pylint.similarities]
-min-similarity-lines = 4              
-ignore-comments = true                
-ignore-docstrings = true              
-ignore-imports = true                 
+min-similarity-lines = 4
+ignore-comments = true
+ignore-docstrings = true
+ignore-imports = true
 
 [tool.isort]
 profile = "black"
 line_length = 88
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["*/tests/*", "*/migrations/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "pass",
+    "raise ImportError",
+]
 
 [build-system]
 requires = ["poetry-core"]
