@@ -2,7 +2,7 @@
 DO $$
 BEGIN
     IF NOT EXISTS (
-        SELECT 1 FROM information_schema.columns 
+        SELECT 1 FROM information_schema.columns
         WHERE table_name = 'users' AND column_name = 'is_superuser'
     ) THEN
         ALTER TABLE users ADD COLUMN is_superuser BOOLEAN DEFAULT FALSE;

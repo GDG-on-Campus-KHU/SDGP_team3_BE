@@ -11,50 +11,50 @@ on:
 jobs:
   code-quality:
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.9'
         cache: 'pip'
-    
+
     - name: Install Poetry
       uses: snok/install-poetry@v1
       with:
         version: 1.7.1
         virtualenvs-create: true
-    
+
     - name: Install dependencies
       run: |
         poetry install --with dev
-    
+
     - name: Run Black
       run: poetry run black . --check
-    
+
     - name: Run isort
       run: poetry run isort --check --profile black .
-    
+
     - name: Run Pylint
       run: poetry run pylint $(git ls-files '*.py')
-    
+
     - name: Run Mypy
       run: poetry run mypy .
-      
+
     - name: Run Flake8
       run: poetry run flake8 .
-      
+
     - name: Run Bandit (보안 검사)
       run: poetry run bandit -r app -x tests
-  
+
   tests:
     runs-on: ubuntu-latest
     needs: code-quality  # 코드 품질 검사가 통과한 후에만 테스트 실행
-    
+
     services:
       postgres:
         image: postgres:14
@@ -69,26 +69,26 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.9'
         cache: 'pip'
-    
+
     - name: Install Poetry
       uses: snok/install-poetry@v1
       with:
         version: 1.7.1
         virtualenvs-create: true
-    
+
     - name: Install dependencies
       run: |
         poetry install --with dev --with test
-    
+
     - name: Run tests with coverage
       run: poetry run pytest --cov=app --cov-report=xml
       env:
@@ -98,7 +98,7 @@ jobs:
         POSTGRES_SERVER: localhost
         POSTGRES_PORT: 5432
         SECRET_KEY: test-secret-key
-    
+
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       with:
@@ -109,30 +109,102 @@ jobs:
     runs-on: ubuntu-latest
     needs: tests  # 테스트가 통과한 후에만 빌드 실행
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'  # main 브랜치로 푸시될 때만 실행
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.9'
-    
+
     - name: Install Poetry
       uses: snok/install-poetry@v1
       with:
         version: 1.7.1
         virtualenvs-create: true
-    
+
     - name: Install dependencies (production only)
       run: |
         poetry install --only main
-    
+
     - name: Build package
       run: poetry build
-    
+
     - name: Archive production artifacts
       uses: actions/upload-artifact@v3
       with:
         name: dist
         path: dist/
+
+# name: PR Checks
+
+# on:
+#   push:
+#     branches:
+#       - "main"
+#   pull_request:
+#     branches: [ main, develop ]  # main과 develop 브랜치로의 PR에 적용
+
+# jobs:
+#   code-quality:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#     - uses: actions/checkout@v4
+#       with:
+#         fetch-depth: 0
+
+#     - name: Set up Python
+#       uses: actions/setup-python@v5
+#       with:
+#         python-version: '3.9'
+#         cache: 'pip'
+
+#     - name: Install Poetry
+#       uses: snok/install-poetry@v1
+#       with:
+#         version: 1.7.1
+#         virtualenvs-create: true
+
+#     - name: Install dependencies
+#       run: |
+#         poetry install --with dev
+
+#     - name: Run Black
+#       run: poetry run black . --check
+
+#     - name: Run isort
+#       run: poetry run isort --check --profile black .
+
+#     - name: Run Pylint
+#       run: poetry run pylint $(git ls-files '*.py')
+
+#     - name: Run Mypy
+#       run: poetry run mypy .
+
+#   tests:
+#     runs-on: ubuntu-latest
+#     needs: code-quality  # 코드 품질 검사가 통과한 후에만 테스트 실행
+
+#     steps:
+#     - uses: actions/checkout@v4
+
+#     - name: Set up Python
+#       uses: actions/setup-python@v5
+#       with:
+#         python-version: '3.9'
+#         cache: 'pip'
+
+#     - name: Install Poetry
+#       uses: snok/install-poetry@v1
+#       with:
+#         version: 1.7.1
+#         virtualenvs-create: true
+
+#     - name: Install dependencies
+#       run: |
+#         poetry install --with dev
+
+#     - name: Run tests
+#       run: poetry run pytest

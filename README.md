@@ -58,3 +58,18 @@ SDGP_team3_BE
       └─ test_user_service.py
 
 ```
+
+## 시작
+```bash
+# 가상환경 생성
+poetry install
+# 가상환경 활성화
+poetry shell
+# 커밋 전 자동으로 코드 스타일 검사 및 수정
+poetry run pre-commit install
+poetry run pre-commit run --all-files
+# 커밋 전 정적 타입 stub 설치
+poetry run mypy --install-types
+# 서버 실행
+uvicorn app.main:app
+```
