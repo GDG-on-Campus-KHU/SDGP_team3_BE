@@ -7,12 +7,26 @@ from app.config import settings
 from app.controllers import user_controller
 from app.database.database import init_db
 
+# google control 라우터
+from app.controllers import google_controller
+
+from starlette.middleware.sessions import SessionMiddleware
+
+
 app = FastAPI(title=settings.PROJECT_NAME, version=settings.PROJECT_VERSION)
+
+# 세션 미들웨어 (authlib 사용)
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=settings.SESSION_SECRET_KEY,
+    same_site="lax",
+    https_only=False
+)
 
 # CORS 미들웨어 설정
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 프로덕션에서는 실제 프론트엔드 도메인으로 제한
+    allow_origins=["http://localhost:8000"],  # 프로덕션에서는 실제 프론트엔드 도메인으로 제한
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -20,7 +34,7 @@ app.add_middleware(
 
 # 라우터 등록
 app.include_router(user_controller.router)
-
+app.include_router(google_controller.router)
 
 @app.get("/")
 def read_root() -> dict:

@@ -7,6 +7,9 @@ from passlib.context import CryptContext
 from app.database.database import execute_query, fetch_all, fetch_one
 from app.models.user_model import User, UserCreate, UserInDB, UserUpdate
 
+# 더미 데이터
+from app.database.fake_data import FAKE_CHALLENGES, FAKE_DECORATIONS
+
 # 비밀번호 암호화를 위한 컨텍스트
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -44,6 +47,8 @@ class UserRepository:
         """데이터베이스 행을 UserInDB 모델로 변환"""
         if not row:
             return None
+        # [MODIFIED by 정환 - 2025-04-12] asyncpg.Record 타입을 dict로 변환하여 오류 방지
+        row = dict(row)
         return UserInDB(
             id=row["id"],
             email=row["email"],
@@ -218,3 +223,12 @@ class UserRepository:
             created_at=user_in_db.created_at,
             updated_at=user_in_db.updated_at,
         )
+    
+    # FAKE DATA
+    @staticmethod
+    async def get_challenges_by_id(user_id: int):
+        return FAKE_CHALLENGES.get(user_id, [])
+
+    @staticmethod
+    async def get_decorations_by_id(user_id: int):
+        return FAKE_DECORATIONS.get(user_id, [])

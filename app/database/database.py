@@ -14,7 +14,7 @@ async def get_pool() -> asyncpg.Pool:
     global pool
     if pool is None:
         pool = await asyncpg.create_pool(
-            dsn=settings.DATABASE_URL, min_size=5, max_size=20, record_class=dict
+            dsn=settings.DATABASE_URL, min_size=5, max_size=20 # [Modified by 정환 2025-04-12-17:00]record_class=dict
         )
     return pool
 
