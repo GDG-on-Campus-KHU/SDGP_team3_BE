@@ -1,14 +1,14 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Mapping, Optional
 
 import asyncpg
 from passlib.context import CryptContext
 
 from app.database.database import execute_query, fetch_all, fetch_one
-from app.models.user_model import User, UserCreate, UserInDB, UserUpdate
 
 # 더미 데이터
-from app.database.fake_data import FAKE_CHALLENGES, FAKE_DECORATIONS
+from app.database.fake_data import FAKE_CHALLENGES, FAKE_DECORATIONS, FAKE_USERS
+from app.models.user_model import User, UserCreate, UserInDB, UserUpdate
 
 # 비밀번호 암호화를 위한 컨텍스트
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -28,7 +28,7 @@ class UserRepository:
         return bool(pwd_context.verify(plain_password, hashed_password))
 
     @staticmethod
-    def _map_row_to_user(row: Dict[str, Any]) -> Optional[User]:
+    def _map_row_to_user(row: Mapping[str, Any]) -> Optional[User]:
         """데이터베이스 행을 User 모델로 변환"""
         if not row:
             return None
@@ -85,13 +85,16 @@ class UserRepository:
     @staticmethod
     async def get_user_by_id(user_id: int) -> Optional[User]:
         """ID로 사용자 조회"""
-        query = """
-            SELECT id, email, username, hashed_password, is_active, is_superuser, created_at, updated_at
-            FROM users
-            WHERE id = $1
-        """
-        row = await fetch_one(query, (user_id,))
-        return UserRepository._map_row_to_user(row)
+        # query = """
+        #     SELECT id, email, username, hashed_password, is_active, is_superuser, created_at, updated_at
+        #     FROM users
+        #     WHERE id = $1
+        # """
+        # row = await fetch_one(query, (user_id,))
+        user_data = FAKE_USERS.get(user_id)
+        if not user_data:
+            return None
+        return UserRepository._map_row_to_user(user_data)  # row
 
     @staticmethod
     async def get_user_by_email(email: str) -> Optional[UserInDB]:
@@ -223,12 +226,12 @@ class UserRepository:
             created_at=user_in_db.created_at,
             updated_at=user_in_db.updated_at,
         )
-    
+
     # FAKE DATA
     @staticmethod
-    async def get_challenges_by_id(user_id: int):
+    async def get_challenges_by_id(user_id: int) -> Optional[List[Dict[str, Any]]]:
         return FAKE_CHALLENGES.get(user_id, [])
 
     @staticmethod
-    async def get_decorations_by_id(user_id: int):
+    async def get_decorations_by_id(user_id: int) -> Optional[List[Dict[str, Any]]]:
         return FAKE_DECORATIONS.get(user_id, [])

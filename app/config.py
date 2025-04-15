@@ -26,16 +26,19 @@ class Settings(BaseSettings):
     TEST_DATABASE_URL: str = "sqlite:///./test.db"
 
     # JWT 설정
-    SECRET_KEY: str = os.getenv("SECRET_KEY")
+    SECRET_KEY: str = os.getenv("SECRET_KEY") or "this-is-a-super-secret-key"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # GOOGLE OAuth 설정
-    GOOGLE_CLIENT_ID : str = os.getenv("GOOGLE_CLIENT_ID")
-    GOOGLE_CLIENT_SECRET : str = os.getenv("GOOGLE_CLIENT_SECRET")
-    GOOGLE_REDIRECT_URI : str = os.getenv("GOOGLE_REDIRECT_URI")
+    GOOGLE_CLIENT_ID: str = os.getenv("GOOGLE_CLIENT_ID") or ""
+    GOOGLE_CLIENT_SECRET: str = os.getenv("GOOGLE_CLIENT_SECRET") or ""
+    GOOGLE_REDIRECT_URI: str = (
+        os.getenv("GOOGLE_REDIRECT_URI") or "http://localhost:8000/api/google/callback"
+    )
 
-    #SESSION 미들웨어 설정
-    SESSION_SECRET_KEY : str = os.getenv("SESSION_SECRET_KEY")
+    # SESSION 미들웨어 설정
+    SESSION_SECRET_KEY: str = os.getenv("SESSION_SECRET_KEY", "default-secret-key")
+
 
 settings = Settings()

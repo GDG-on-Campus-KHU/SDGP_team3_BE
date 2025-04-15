@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from jose import JWTError, jwt
 
 from app.config import settings
-from app.models.user_model import User, UserCreate, UserLogin, UserUpdate
+from app.models.user_model import User, UserCreate, UserInDB, UserLogin, UserUpdate
 from app.repositories.user_repository import UserRepository
 
 
@@ -40,19 +40,19 @@ class UserService:
     @staticmethod
     async def get_user_by_email(email: str) -> Optional[User]:
         """이메일로 사용자 조회 서비스"""
-        user_in_db = await UserRepository.get_user_by_email(email)
-        if not user_in_db:
+        user = await UserRepository.get_user_by_email(email)
+        if not user:
             return None
 
         # UserInDB를 User로 변환 (비밀번호 해시 제외)
         return User(
-            id=user_in_db.id,
-            email=user_in_db.email,
-            username=user_in_db.username,
-            is_active=user_in_db.is_active,
-            is_superuser=user_in_db.is_superuser,
-            created_at=user_in_db.created_at,
-            updated_at=user_in_db.updated_at,
+            id=user.id,
+            email=user.email,
+            username=user.username,
+            is_active=user.is_active,
+            is_superuser=user.is_superuser,
+            created_at=user.created_at,
+            updated_at=user.updated_at,
         )
 
     @staticmethod
@@ -97,7 +97,7 @@ class UserService:
         return await UserRepository.delete_user(user_id)
 
     @staticmethod
-    async def authenticate_user(credentials: UserLogin) -> Optional[dict]:
+    async def authenticate_user(credentials: UserLogin) -> Optional[Dict]:
         """사용자 인증 및 토큰 생성 서비스"""
         user = await UserRepository.verify_user(credentials.email, credentials.password)
         if not user:
@@ -109,7 +109,7 @@ class UserService:
         return {"access_token": access_token, "token_type": "bearer", "user": user}
 
     @staticmethod
-    def create_access_token(data: dict) -> str:
+    def create_access_token(data: Dict) -> str:
         """JWT 액세스 토큰 생성"""
         to_encode = data.copy()
         expire = datetime.utcnow() + timedelta(
@@ -148,18 +148,15 @@ class UserService:
             created_at=user.created_at,
             updated_at=user.updated_at,
         )
-    
-    from app.services.fake_data import FAKE_CHALLENGES, FAKE_DECORATIONS
-
 
     @staticmethod
-    async def get_challenges_by_id(user_id: int) -> List[dict]:
+    async def get_challenges_by_id(user_id: int) -> Optional[List[Dict[str, Any]]]:
         """사용자의 챌린지 목록 가져오기"""
         challenges = await UserRepository.get_challenges_by_id(user_id)
         return challenges
-    
+
     @staticmethod
-    async def get_decorations_by_id(user_id: int) -> List[dict]:
+    async def get_decorations_by_id(user_id: int) -> Optional[List[Dict[str, Any]]]:
         """사용자의 데코레이션 목록 가져오기"""
         decorations = await UserRepository.get_decorations_by_id(user_id)
         return decorations
