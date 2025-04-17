@@ -52,3 +52,16 @@ class UserLogin(BaseModel):
 
     email: EmailStr
     password: str
+
+
+# 챌린지와 데코레이션
+class Challenge(BaseModel):
+    id: int
+    title: str
+    completed: bool
+
+
+class Decoration(BaseModel):
+    id: int
+    type: str
+    name: str

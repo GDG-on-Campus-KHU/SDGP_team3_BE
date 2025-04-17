@@ -14,7 +14,9 @@ async def get_pool() -> asyncpg.Pool:
     global pool
     if pool is None:
         pool = await asyncpg.create_pool(
-            dsn=settings.DATABASE_URL, min_size=5, max_size=20, record_class=dict
+            dsn=settings.DATABASE_URL,
+            min_size=5,
+            max_size=20,  # [Modified by 정환 2025-04-12-17:00]record_class=dict
         )
     return pool
 
@@ -83,24 +85,25 @@ async def init_db() -> None:
     """
     데이터베이스 초기화 함수
     """
-    try:
-        pool = await get_pool()
-        async with pool.acquire() as conn:
-            # 유저 테이블 생성
-            await conn.execute(
-                """
-                CREATE TABLE IF NOT EXISTS users (
-                    id SERIAL PRIMARY KEY,
-                    email VARCHAR(255) UNIQUE NOT NULL,
-                    username VARCHAR(255) UNIQUE NOT NULL,
-                    hashed_password VARCHAR(255) NOT NULL,
-                    is_active BOOLEAN DEFAULT TRUE,
-                    is_superuser BOOLEAN DEFAULT FALSE,
-                    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-                )
-            """
-            )
-            print("Database initialized successfully")
-    except Exception as e:
-        print(f"Database initialization error: {e}")
+    # try:
+    #     pool = await get_pool()
+    #     async with pool.acquire() as conn:
+    #         # 유저 테이블 생성
+    #         await conn.execute(
+    #             """
+    #             CREATE TABLE IF NOT EXISTS users (
+    #                 id SERIAL PRIMARY KEY,
+    #                 email VARCHAR(255) UNIQUE NOT NULL,
+    #                 username VARCHAR(255) UNIQUE NOT NULL,
+    #                 hashed_password VARCHAR(255) NOT NULL,
+    #                 is_active BOOLEAN DEFAULT TRUE,
+    #                 is_superuser BOOLEAN DEFAULT FALSE,
+    #                 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    #                 updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    #             )
+    #         """
+    #         )
+    #         print("Database initialized successfully")
+    # except Exception as e:
+    #     print(f"Database initialization error: {e}")
+    pass
