@@ -171,9 +171,9 @@ from app.models.user_model import Challenge, Decoration
 
 
 @router.get("/{user_id}/challenges", response_model=List[Challenge])
-async def get_challenges_by_id(user_id: int) -> Optional[List[Any]]:
+async def get_fake_challenges_by_id(user_id: int) -> Optional[List[Any]]:
     """ID로 사용자의 챌린지 조회 엔드포인트"""
-    challenges = await UserService.get_challenges_by_id(user_id)
+    challenges = await UserService.get_fake_challenges_by_id(user_id)
     if not challenges:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -183,9 +183,9 @@ async def get_challenges_by_id(user_id: int) -> Optional[List[Any]]:
 
 
 @router.get("/{user_id}/decorations", response_model=List[Decoration])
-async def get_decorations_by_id(user_id: int) -> Optional[List[Any]]:
+async def get_fake_decorations_by_id(user_id: int) -> Optional[List[Any]]:
     """ID로 사용자의 장식 조회 엔드포인트"""
-    decorations = await UserService.get_decorations_by_id(user_id)
+    decorations = await UserService.get_fake_decorations_by_id(user_id)
     if not decorations:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

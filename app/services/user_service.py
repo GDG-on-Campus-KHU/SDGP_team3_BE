@@ -150,13 +150,15 @@ class UserService:
         )
 
     @staticmethod
-    async def get_challenges_by_id(user_id: int) -> Optional[List[Dict[str, Any]]]:
+    async def get_fake_challenges_by_id(user_id: int) -> Optional[List[Dict[str, Any]]]:
         """사용자의 챌린지 목록 가져오기"""
-        challenges = await UserRepository.get_challenges_by_id(user_id)
+        challenges = await UserRepository.get_fake_challenges_by_id(user_id)
         return challenges
 
     @staticmethod
-    async def get_decorations_by_id(user_id: int) -> Optional[List[Dict[str, Any]]]:
+    async def get_fake_decorations_by_id(
+        user_id: int,
+    ) -> Optional[List[Dict[str, Any]]]:
         """사용자의 데코레이션 목록 가져오기"""
-        decorations = await UserRepository.get_decorations_by_id(user_id)
+        decorations = await UserRepository.get_fake_decorations_by_id(user_id)
         return decorations

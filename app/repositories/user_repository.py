@@ -229,9 +229,11 @@ class UserRepository:
 
     # FAKE DATA
     @staticmethod
-    async def get_challenges_by_id(user_id: int) -> Optional[List[Dict[str, Any]]]:
+    async def get_fake_challenges_by_id(user_id: int) -> Optional[List[Dict[str, Any]]]:
         return FAKE_CHALLENGES.get(user_id, [])
 
     @staticmethod
-    async def get_decorations_by_id(user_id: int) -> Optional[List[Dict[str, Any]]]:
+    async def get_fake_decorations_by_id(
+        user_id: int,
+    ) -> Optional[List[Dict[str, Any]]]:
         return FAKE_DECORATIONS.get(user_id, [])
