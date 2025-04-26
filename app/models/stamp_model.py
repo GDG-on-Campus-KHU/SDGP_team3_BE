@@ -1,7 +1,7 @@
 import enum
 import re
 from datetime import datetime, timedelta, timezone
-from typing import NewType, Optional
+from typing import Any, List, NewType, Optional
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
@@ -17,9 +17,6 @@ class StampBase(BaseModel):
     """Stamp 모델"""
 
     id: int
-    challenge_id: int = Field(
-        ..., description="챌린지 ID"
-    )  # 후에 다른 챌린지에서 중복 적용 확장성을 위함.
     saved_at: datetime = Field(
         default_factory=datetime.now(timezone.utc), description="저장 날짜"
     )
@@ -40,6 +37,18 @@ class Tumbler(StampBase):
     """Tumbler 스탬프 모델"""
 
     type: StampType = StampType.TUMBLER
+
+
+class StampCreate(StampBase):
+    """Stamp 챌린지 생성 모델"""
+
+    challenge_ids: List[int] = []  # 후에 다른 챌린지에서 중복 적용 확장성을 위함.
+
+
+class StampResponse(StampBase):
+    """Stamp 챌린지 응답 모델"""
+
+    challenges: List[Any]
 
 
 class StampInDB(StampBase):
