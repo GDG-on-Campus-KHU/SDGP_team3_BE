@@ -74,6 +74,7 @@ async def get_current_user_info(
 async def get_user(
     user_id: int, current_user: User = Depends(get_current_active_user)
 ) -> Optional[User]:
+    # =Depends(get_current_active_user)
     """ID로 사용자 조회 엔드포인트"""
     user = await UserService.get_user_by_id(user_id)
     print(f"current user: {current_user}")
@@ -164,3 +165,30 @@ async def login(user_data: UserLogin) -> Union[User, Any]:
         )
 
     return auth_result["user"]
+
+
+from app.models.user_model import Challenge, Decoration
+
+
+@router.get("/{user_id}/challenges", response_model=List[Challenge])
+async def get_fake_challenges_by_id(user_id: int) -> Optional[List[Any]]:
+    """ID로 사용자의 챌린지 조회 엔드포인트"""
+    challenges = await UserService.get_fake_challenges_by_id(user_id)
+    if not challenges:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"ID가 {user_id}인 사용자를 찾을 수 없습니다.",
+        )
+    return challenges
+
+
+@router.get("/{user_id}/decorations", response_model=List[Decoration])
+async def get_fake_decorations_by_id(user_id: int) -> Optional[List[Any]]:
+    """ID로 사용자의 장식 조회 엔드포인트"""
+    decorations = await UserService.get_fake_decorations_by_id(user_id)
+    if not decorations:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"ID가 {user_id}인 사용자를 찾을 수 없습니다.",
+        )
+    return decorations
