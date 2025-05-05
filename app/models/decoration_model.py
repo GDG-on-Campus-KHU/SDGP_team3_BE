@@ -38,7 +38,7 @@ class DecorationBase(BaseModel):
 
     id: int
     name: str = Field(..., max_length=50, description="장식 이름")
-    version: str = Field(..., max_length=10, description="장식 버전")
+    version: int = Field(..., max_length=10, description="장식 버전")
     # acquired_at: datetime = Field(
     #     default_factory=datetime.now(timezone.utc), description="획득 날짜"
     # )
