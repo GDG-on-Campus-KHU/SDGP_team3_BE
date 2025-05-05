@@ -3,12 +3,18 @@ from typing import Any, Optional, cast
 
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.config import settings
 
 # google control 라우터
-from app.controllers import google_controller, user_controller
+from app.controllers import (
+    decoration_controller,
+    decoration_user_controller,
+    google_controller,
+    user_controller,
+)
 from app.database.database import init_db
 
 app = FastAPI(title=settings.PROJECT_NAME, version=settings.PROJECT_VERSION)
@@ -30,9 +36,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# 정적 파일 서빙
+app.mount("/static", StaticFiles(directory="static"), name="static")  # 정적 파일 경로
+
 # 라우터 등록
 app.include_router(user_controller.router)
 app.include_router(google_controller.router)
+app.include_router(decoration_controller.router)
+app.include_router(decoration_user_controller.router)
 
 
 @app.get("/")

@@ -4,7 +4,13 @@ from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
 
 # .env 파일에서 환경변수 로드
-load_dotenv(".env")
+env_filename = os.getenv("ENV_FILENAME", ".env.test")
+if "test" not in env_filename:
+    print(f"[WARNING] test 환경이 아닙니다! 파일 이름: {env_filename}")
+    load_dotenv(env_filename)
+else:
+    print(f"[INFO] test 환경입니다! 파일 이름: {env_filename}")
+    load_dotenv(env_filename)
 
 
 class Settings(BaseSettings):
@@ -21,6 +27,8 @@ class Settings(BaseSettings):
     DATABASE_URL: str = (
         f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}"
     )
+
+    print("DATABASE_URL:", DATABASE_URL)
 
     # 테스트용 SQLite 데이터베이스 URL
     TEST_DATABASE_URL: str = "sqlite:///./test.db"
