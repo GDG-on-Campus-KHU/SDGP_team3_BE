@@ -105,21 +105,25 @@ class Tree(Asset):
     """Tree 장식 모델"""
 
     type: AssetType = AssetType.TREE
-    pass
 
 
 class Flower(Asset):
     """Flower 장식 모델"""
 
     type: AssetType = AssetType.FLOWER
-    pass
 
 
 class Animal(Asset):
     """Animal 장식 모델"""
 
     type: AssetType = AssetType.ANIMAL
-    pass
+
+
+class DecorationReference(BaseModel):
+    """DecorationReference 장식 참조 모델"""
+
+    did: int
+    type: DecorationType
 
 
 class DecorationInDB(BaseModel):
