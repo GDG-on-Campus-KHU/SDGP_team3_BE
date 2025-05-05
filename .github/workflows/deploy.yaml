@@ -1,0 +1,81 @@
+name: Build and Deploy to GCP
+
+on:
+  push:
+    branches: [ deploy ]  # 또는 원하는 브랜치 이름
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GAR_LOCATION: asia-northeast3  # 원하는 리전으로 변경
+  REPOSITORY: kkook-app  # GAR 저장소 이름
+  IMAGE_NAME: ${{ secrets.GAR_IMAGE_NAME }}  # Docker 이미지 이름
+  INSTANCE_NAME: ${{ secrets.GCP_COMPUTE_INSTANCE }}
+  ZONE: ${{ secrets.GCP_COMPUTE_ZONE }}
+  POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+  POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+  POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+  POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+  SECRET_KEY: ${{ secrets.SECRET_KEY }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+      with:
+        project_id: ${{ env.PROJECT_ID }}
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        export_default_credentials: true
+
+    - name: Authenticate Docker to Google Artifact Registry
+      run: |
+        gcloud auth configure-docker ${{ env.GAR_LOCATION }}-docker.pkg.dev
+
+    - name: Build and Push Docker image
+      run: |
+        docker build -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} .
+        docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+        # 최신 태그 설정
+        docker tag ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:latest
+        docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:latest
+
+    - name: Setup SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.GCP_COMPUTE_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H $(gcloud compute instances describe ${{ env.INSTANCE_NAME }} --zone ${{ env.ZONE }} --format='get(networkInterfaces[0].accessConfigs[0].natIP)') >> ~/.ssh/known_hosts
+
+    - name: Deploy to Compute Engine
+      run: |
+        # 배포 스크립트 준비
+        cat > deploy.sh << EOF
+        #!/bin/bash
+        mkdir -p ~/kkook-app
+        cd ~/kkook-app
+
+        # 최신 docker-compose.yml 가져오기 (필요시)
+        git pull origin deploy
+
+        # 최신 이미지 풀링
+        docker pull ${GAR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/${IMAGE_NAME}:latest
+
+        # 이전 컨테이너 중지 및 새 컨테이너 시작
+        docker compose -f docker-compose-production.yml down
+        ./deploy/run_in_production.sh \\
+            POSTGRES_USER='${POSTGRES_USER}' \\
+            POSTGRES_PASSWORD='${POSTGRES_PASSWORD}' \\
+            POSTGRES_DB='${POSTGRES_DB}' \\
+            POSTGRES_PORT='${POSTGRES_PORT}'
+        EOF
+
+        # 배포 스크립트 전송 및 실행
+        SERVER_IP=$(gcloud compute instances describe ${{ env.INSTANCE_NAME }} --zone ${{ env.ZONE }} --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
+        scp deploy.sh ${{ secrets.GCP_SSH_USERNAME }}@$SERVER_IP:/tmp/deploy.sh
+        ssh ${{ secrets.GCP_SSH_USERNAME }}@$SERVER_IP "chmod +x /tmp/deploy.sh && /tmp/deploy.sh"
