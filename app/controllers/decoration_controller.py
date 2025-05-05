@@ -108,11 +108,13 @@ async def create_landscape(
         rarity=rarity,
     )
     # 타입 검사
-    if landscape_data.type not in LandscapeType.__members__.values():
-        print(f"Invalid landscape type: {landscape_data.type}")
+    try:
+        landscape_data.type = LandscapeType[type]
+    except KeyError:
+        print(f"Invalid landscape type: {type}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Landscape 타입에 맞지 않습니다. 허용되는 타입: {', '.join(LandscapeType.__members__.values())}",
+            detail=f"Landscape 타입에 맞지 않습니다. 허용되는 타입: {', '.join(LandscapeType.__members__.keys())}",
         )
 
     # 파일 확장자 검사
