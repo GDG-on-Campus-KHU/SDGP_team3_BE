@@ -49,11 +49,14 @@ async def create_asset(
     )
 
     # 타입 검사
-    if type not in AssetType.__members__.values():
+    try:
+        type_enum = AssetType(type)
+    except ValueError:
         print(f"Invalid asset type: {type}")
+        allowed_types = [member.value for member in AssetType]
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Asset 타입에 맞지 않습니다. 허용되는 타입: {', '.join(AssetType.__members__.values())}",
+            detail=f"Asset 타입에 맞지 않습니다. 허용되는 타입: {', '.join(allowed_types)}",
         )
 
     # 파일 확장자 검사
