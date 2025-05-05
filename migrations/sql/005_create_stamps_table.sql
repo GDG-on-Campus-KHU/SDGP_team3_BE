@@ -1,0 +1,11 @@
+CREATE TYPE STAMP_TYPE AS ENUM (
+    'od',
+    'tb'
+);
+
+CREATE TABLE IF NOT EXISTS stamps (
+    id SERIAL PRIMARY KEY,
+    saved_at TIMESTAMPTZ NOT NULL,
+    save_url TEXT NOT NULL,
+    type STAMP_TYPE NOT NULL
+);

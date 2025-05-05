@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS challenge_stamp (
+    cid BIGINT NOT NULL,
+    sid BIGINT NOT NULL,
+    CONSTRAINT "pk_challenge_stamp" PRIMARY KEY (cid, sid),
+    CONSTRAINT "fkey_cid" FOREIGN KEY (cid) REFERENCES challenges (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "fkey_sid" FOREIGN KEY (sid) REFERENCES stamps (id) ON DELETE CASCADE ON UPDATE CASCADE
+);

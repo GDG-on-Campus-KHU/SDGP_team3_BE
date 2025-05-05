@@ -92,6 +92,11 @@ disallow_untyped_decorators = false
 module = "app.main"
 disallow_untyped_decorators = false
 
+[[tool.mypy.overrides]]
+module = "app.models.*"
+disallow_untyped_defs = false
+disallow_untyped_decorators = false
+
 [tool.pylint.main]
 ignore = ["CVS", ".git", ".venv"]
 jobs = 0

@@ -1,13 +1,15 @@
 from typing import Any, List, Optional, Union
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm
 
+from app.core.auth import (
+    get_current_active_user,
+    get_current_superuser,
+    get_current_user,
+)
 from app.models.user_model import User, UserCreate, UserLogin, UserUpdate
 from app.services.user_service import UserService
-
-# OAuth2 인증 스키마
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/users/token")
 
 # 라우터 설정
 router = APIRouter(
@@ -15,31 +17,6 @@ router = APIRouter(
     tags=["users"],
     responses={404: {"description": "Not found"}},
 )
-
-
-# 현재 사용자 가져오기 의존성
-async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
-    """JWT 토큰에서 현재 사용자 정보 가져오기"""
-    user = await UserService.get_current_user(token)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="유효하지 않은 인증 정보",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    return user
-
-
-# 활성 사용자인지 확인하는 의존성
-async def get_current_active_user(
-    current_user: User = Depends(get_current_user),
-) -> User:
-    """현재 사용자가 활성 상태인지 확인"""
-    if not current_user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="비활성화된 사용자"
-        )
-    return current_user
 
 
 @router.post("/", response_model=User, status_code=status.HTTP_201_CREATED)
