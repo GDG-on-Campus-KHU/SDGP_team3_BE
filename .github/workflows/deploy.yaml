@@ -51,6 +51,14 @@ jobs:
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan -H $(gcloud compute instances describe ${{ env.INSTANCE_NAME }} --zone ${{ env.ZONE }} --format='get(networkInterfaces[0].accessConfigs[0].natIP)') >> ~/.ssh/known_hosts
 
+    - name: Create .env file
+      run: |
+        echo "POSTGRES_USER=${{ env.POSTGRES_USER }}" > .env.production
+        echo "POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }}" >> .env.production
+        echo "POSTGRES_DB=${{ env.POSTGRES_DB }}" >> .env.production
+        echo "POSTGRES_PORT=${{ env.POSTGRES_PORT }}" >> .env.production
+        echo "SECRET_KEY=${{ env.SECRET_KEY }}" >> .env.production
+
     - name: Deploy to Compute Engine
       run: |
         # 배포 스크립트 준비
@@ -67,17 +75,15 @@ jobs:
         git pull origin deploy
 
         # 최신 이미지 풀링
-        docker pull ${GAR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/${IMAGE_NAME}:latest
+        sudo docker pull ${GAR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/${IMAGE_NAME}:latest
 
         # 이전 컨테이너 중지 및 새 컨테이너 시작
-        ./deploy/run_in_production.sh \\
-            POSTGRES_USER='${{ env.POSTGRES_USER}}' \\
-            POSTGRES_PASSWORD='${{ env.POSTGRES_PASSWORD }}' \\
-            POSTGRES_DB='${{ env.POSTGRES_DB }}' \\
-            POSTGRES_PORT='${{ env.POSTGRES_PORT }}'
+        ./deploy/run_in_production.sh
         EOF
+
 
         # 배포 스크립트 전송 및 실행
         SERVER_IP=$(gcloud compute instances describe ${{ env.INSTANCE_NAME }} --zone ${{ env.ZONE }} --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
         scp deploy.sh ${{ secrets.GCP_SSH_USERNAME }}@$SERVER_IP:/tmp/deploy.sh
+        scp .env.production ${{ secrets.GCP_SSH_USERNAME }}@$SERVER_IP:/tmp/.env.production
         ssh ${{ secrets.GCP_SSH_USERNAME }}@$SERVER_IP "chmod +x /tmp/deploy.sh && /tmp/deploy.sh"

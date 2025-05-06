@@ -1,8 +1,7 @@
-version: '3.8'
-
 services:
   api:
     container_name: fastapi_app
+    image: asia-northeast3-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:latest
     restart: always
     ports:
       - "8000:8000"
