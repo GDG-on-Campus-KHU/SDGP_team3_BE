@@ -58,7 +58,7 @@ jobs:
         #!/bin/bash
         mkdir -p ~/kkook-app
         cd ~/kkook-app
-        
+
         # GitHub 레포지토리 클론 (필요시)
         git init
         git remote add origin https://github.com/GDG-on-Campus-KHU/SDGP_team3_BE
@@ -70,17 +70,14 @@ jobs:
         docker pull ${GAR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/${IMAGE_NAME}:latest
 
         # 이전 컨테이너 중지 및 새 컨테이너 시작
-        docker compose -f docker-compose-production.yml down
         ./deploy/run_in_production.sh \\
-            POSTGRES_USER='${POSTGRES_USER}' \\
-            POSTGRES_PASSWORD='${POSTGRES_PASSWORD}' \\
-            POSTGRES_DB='${POSTGRES_DB}' \\
-            POSTGRES_PORT='${POSTGRES_PORT}'
+            POSTGRES_USER='${{ env.POSTGRES_USER}}' \\
+            POSTGRES_PASSWORD='${{ env.POSTGRES_PASSWORD }}' \\
+            POSTGRES_DB='${{ env.POSTGRES_DB }}' \\
+            POSTGRES_PORT='${{ env.POSTGRES_PORT }}'
         EOF
 
         # 배포 스크립트 전송 및 실행
         SERVER_IP=$(gcloud compute instances describe ${{ env.INSTANCE_NAME }} --zone ${{ env.ZONE }} --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
         scp deploy.sh ${{ secrets.GCP_SSH_USERNAME }}@$SERVER_IP:/tmp/deploy.sh
         ssh ${{ secrets.GCP_SSH_USERNAME }}@$SERVER_IP "chmod +x /tmp/deploy.sh && /tmp/deploy.sh"
-
-        gcloud compute instances describe kkook-instance --zone asia-northeast3 --format='get(networkInterfaces[0].accessConfigs[0].natIP)'

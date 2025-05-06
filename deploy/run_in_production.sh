@@ -19,8 +19,8 @@ if [ $# -gt 0 ]; then
     ENV_VARS="$ENV_VARS -e $VAR"
   done
 
-  docker compose -f docker-compose-production.yml down
-  docker compose $ENV_VARS -f docker-compose-production.yml up -d
+  sudo docker compose -f docker-compose-production.yml down
+  sudo docker compose $ENV_VARS -f docker-compose-production.yml up -d
 else
   echo "No environment variables provided, using .env.production file..."
   exit 1
