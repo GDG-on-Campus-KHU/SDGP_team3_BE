@@ -58,6 +58,10 @@ jobs:
         #!/bin/bash
         mkdir -p ~/kkook-app
         cd ~/kkook-app
+        
+        # GitHub 레포지토리 클론 (필요시)
+        git init
+        git remote add origin https://github.com/GDG-on-Campus-KHU/SDGP_team3_BE
 
         # 최신 docker-compose.yml 가져오기 (필요시)
         git pull origin deploy
@@ -78,3 +82,5 @@ jobs:
         SERVER_IP=$(gcloud compute instances describe ${{ env.INSTANCE_NAME }} --zone ${{ env.ZONE }} --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
         scp deploy.sh ${{ secrets.GCP_SSH_USERNAME }}@$SERVER_IP:/tmp/deploy.sh
         ssh ${{ secrets.GCP_SSH_USERNAME }}@$SERVER_IP "chmod +x /tmp/deploy.sh && /tmp/deploy.sh"
+
+        gcloud compute instances describe kkook-instance --zone asia-northeast3 --format='get(networkInterfaces[0].accessConfigs[0].natIP)'
