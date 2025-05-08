@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS challenges (
     id SERIAL PRIMARY KEY,
     uid BIGINT NOT NULL,
     title TEXT NOT NULL,
-    description TEXT,
+    description TEXT NULL,
     is_done BOOLEAN DEFAULT FALSE,
     od_obj SMALLINT NULL,
     od_ach SMALLINT NULL,

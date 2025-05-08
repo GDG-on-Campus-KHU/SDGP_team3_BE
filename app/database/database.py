@@ -67,18 +67,19 @@ async def fetch_all(
         return await conn.fetch(query)
 
 
-async def execute_many(query: str, values: List[tuple]) -> Any:
+async def execute_many(query: str, list_values: List[tuple]) -> None:
     """
-    여러 쿼리 일괄 실행
+    여러 쿼리 일괄 실행: None 반환함...
     """
     pool = await get_pool()
     async with pool.acquire() as conn:
+        await conn.executemany(query, list_values)
+        return None
         # 트랜잭션 사용 -> 이제 Atomic하게 처리됨!
         # async with conn.transaction():
         #     # executemany 대신 prepare와 execute 조합 사용
         #     stmt = await conn.prepare(query)
         #     await asyncio.gather(*[stmt.execute(*value) for value in values])
-        return await conn.executemany(query, *values)
 
 
 async def init_db() -> None:
