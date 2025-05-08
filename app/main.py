@@ -10,9 +10,11 @@ from app.config import settings
 
 # google control 라우터
 from app.controllers import (
+    challenge_controller,
     decoration_controller,
     decoration_user_controller,
     google_controller,
+    stamp_controller,
     user_controller,
 )
 from app.database.database import init_db
@@ -44,6 +46,8 @@ app.include_router(user_controller.router)
 app.include_router(google_controller.router)
 app.include_router(decoration_controller.router)
 app.include_router(decoration_user_controller.router)
+app.include_router(challenge_controller.router)
+app.include_router(stamp_controller.router)
 
 
 @app.get("/")
