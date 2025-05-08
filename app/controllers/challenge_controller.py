@@ -119,6 +119,7 @@ async def get_challenges(
                 stamps=(
                     [stamp for stamp in challenge.stamps] if challenge.stamps else None
                 ),  # 스탬프가 없는 경우, None으로 설정
+                type=challenge.type,
             )
             for challenge in challenge_with_stamps
         ]

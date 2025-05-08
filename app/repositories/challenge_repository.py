@@ -58,9 +58,15 @@ class ChallengeRepository:
         # 챌린지 ID 별로 스탬프를 그룹화
         cid_map = defaultdict(list)
         # key: cid, value: idx
+        cid_ctypes = {}
+        # key: cid, value: stamp type
         for idx, row in enumerate(rows):
             cid = row["id"]
             cid_map[cid].append(idx)
+            if row.get("od_obj") is not None:
+                cid_ctypes[cid] = StampType.ORDER_DETAILS
+            elif row.get("tb_obj") is not None:
+                cid_ctypes[cid] = StampType.TUMBLER
 
         challenges_with_stamps = []
         print(f"rows:", rows)
@@ -96,6 +102,7 @@ class ChallengeRepository:
                 start_at=rows[first_idx]["start_at"],
                 due_at=rows[first_idx]["due_at"],
                 stamps=stamps,  # 스탬프 정보 추가
+                type=cid_ctypes[cid],  # 스탬프 타입 추가
             )
             challenges_with_stamps.append(challenge_with_stamp)
 

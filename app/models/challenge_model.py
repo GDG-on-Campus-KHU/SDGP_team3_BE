@@ -5,7 +5,7 @@ from typing import Any, List, NewType, Optional, Union
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
-from app.models.stamp_model import StampInDB, StampResponse
+from app.models.stamp_model import StampInDB, StampResponse, StampType
 
 
 class ChallengeBase(BaseModel):
@@ -65,6 +65,7 @@ class ChallengeResponse(BaseModel):
     start_at: Union[str, datetime] = Field(..., description="시작 날짜")
     due_at: Union[str, datetime] = Field(..., description="종료 날짜")
     stamps: Optional[List[StampResponse]]  # stamps
+    type: StampType = Field(..., description="스탬프에 따른 챌린지 타입")
 
     class Config:
         orm_mode = True
@@ -84,6 +85,7 @@ class ChallengeResponse(BaseModel):
         start_at: Union[str, datetime],
         due_at: Union[str, datetime],
         stamps: Optional[List[StampInDB]],
+        type: StampType,
     ) -> "ChallengeResponse":
         """타임스탬프를 날짜(YYYY-MM-DD)로 변환하는 메서드"""
         # datetime 객체를 YYYY-MM-DD 형식의 문자열로 변환
@@ -114,6 +116,7 @@ class ChallengeResponse(BaseModel):
                 start_at=start_at_str,
                 due_at=due_at_str,
                 stamps=None,
+                type=type,
             )
         else:
             return cls(
@@ -137,6 +140,7 @@ class ChallengeResponse(BaseModel):
                     )
                     for stamp in stamps
                 ],
+                type=type,
             )
 
 
