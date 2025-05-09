@@ -1,3 +1,4 @@
+import traceback
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -28,8 +29,15 @@ async def get_user_decorations(
 ) -> GetDecorationUserResponse:
     """사용자의 장식 목록 조회 엔드포인트"""
     uid_request = UIDDecorationUserRequest(uid=user.id)
-    decorations = await DecorationUserService.get_by_user_id(uid_request.uid)
-    return GetDecorationUserResponse(decorations=decorations)
+    try:
+        decorations = await DecorationUserService.get_by_user_id(uid_request.uid)
+        return GetDecorationUserResponse(decorations=decorations)
+    except Exception as e:
+        print(f"ERROR: {traceback.format_exc()}")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"장식을 찾을 수 없습니다. {str(e)}",
+        )
 
 
 @router.post("/", response_model=CreateDecorationUserResponse)
@@ -45,18 +53,24 @@ async def add_decoration_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="사용자 ID가 일치하지 않습니다.",
         )
-    decoration_user = await DecorationUserService.add_decoration_user(
-        uid_request.uid,
-        decoration_ref.did,
-        decoration_ref.type,
-    )
-    if not decoration_user:
+    try:
+        decoration_user = await DecorationUserService.add_decoration_user(
+            uid_request.uid,
+            decoration_ref.did,
+            decoration_ref.type,
+        )
+        if not decoration_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="장식 생성에 실패했습니다.",
+            )
+        return CreateDecorationUserResponse(decoration_user=decoration_user)
+    except Exception as e:
+        print(f"ERROR: {traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="장식 생성에 실패했습니다.",
+            detail=f"장식 생성에 실패했습니다. {str(e)}",
         )
-    response = CreateDecorationUserResponse(decoration_user=decoration_user)
-    return response
 
 
 @router.post("/random", response_model=DecorationInDB)
@@ -76,27 +90,43 @@ async def draw_random_decoration(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="사용자 ID가 일치하지 않습니다.",
         )
-    random_decoration = await DecorationUserService.draw_random_decoration(
-        uid_request.uid
-    )
-    if not random_decoration:
+    try:
+        random_decoration = await DecorationUserService.draw_random_decoration(
+            uid_request.uid
+        )
+        if not random_decoration:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="랜덤 장식을 찾을 수 없거나 사용자가 모두 가지고 있습니다.",
+            )
+    except Exception as e:
+        print(f"ERROR: {traceback.format_exc()}")
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="랜덤 장식을 찾을 수 없거나 사용자가 모두 가지고 있습니다.",
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"랜덤 장식 뽑기 중 오류가 발생했습니다: {str(e)}",
         )
 
     # 랜덤 장식 유저 추가
-    decoration_user = await DecorationUserService.add_decoration_user(
-        uid_request.uid,
-        random_decoration.id,
-        random_decoration.type,
-    )
-    if not decoration_user:
+    # TODO: 얻자마자 바로 장착한다면 여기 수정 필요!
+    try:
+        decoration_user = await DecorationUserService.add_decoration_user(
+            uid_request.uid,
+            random_decoration.id,
+            random_decoration.type,
+        )
+        if not decoration_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="장식 생성에 실패했습니다.",
+            )
+    except Exception as e:
+        print(f"ERROR: {traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="장식 생성에 실패했습니다.",
+            detail=f"장식 생성에 실패했습니다. {str(e)}",
         )
-    return random_decoration
+    else:
+        return random_decoration
 
 
 @router.patch("/", response_model=DecorationUserInDB)

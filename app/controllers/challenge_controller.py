@@ -1,3 +1,4 @@
+import traceback
 from datetime import datetime
 from typing import List, Optional, Union
 
@@ -31,6 +32,7 @@ from app.models.decoration_model import (
     Landscape,
     LandscapeType,
 )
+from app.models.stamp_model import StampType
 from app.models.user_model import User
 from app.services.challenge_service import ChallengeService
 from app.services.decoration_service import DecorationService
@@ -77,11 +79,13 @@ async def create_challenge(
             tb_ach=challenge.tb_ach,
             start_at=challenge.start_at,
             due_at=challenge.due_at,
+            type=StampType.ORDER_DETAILS if challenge.od_obj else StampType.TUMBLER,
         )
         print(f"challenge: {challenge}")
 
         return challenge
     except ValueError as e:
+        print(f"ERROR: {traceback.format_exc()}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
@@ -95,11 +99,18 @@ async def get_challenges(
     """
     # 챌린지 및 스탬프 한 번에 조회 (uid로)
     # uid로부터 챌린지 테이블을 먼저 조회하니 ChallengeService에서 처리
-    challenge_with_stamps = await ChallengeService.get_challenge_response_by_uid(
-        user.id
-    )
-    if not challenge_with_stamps:
-        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    try:
+        challenge_with_stamps = await ChallengeService.get_challenge_response_by_uid(
+            user.id
+        )
+        if not challenge_with_stamps:
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
+    except Exception as e:
+        print(f"ERROR: {traceback.format_exc()}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"챌린지 토큰으로 uid로 조회 중 오류가 발생했습니다: {str(e)}",
+        )
 
     # 타임스탬프 변환
     try:
@@ -124,6 +135,7 @@ async def get_challenges(
             for challenge in challenge_with_stamps
         ]
     except Exception as e:
+        print(f"ERROR: {traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"타임스탬프 변환 중 오류가 발생했습니다: {str(e)}",

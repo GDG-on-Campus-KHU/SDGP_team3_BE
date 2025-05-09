@@ -179,6 +179,7 @@ async def create_stamp(
                 detail="챌린지 조회에 실패했습니다.",
             )
     except Exception as e:
+        print(f"ERROR: {traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"챌린지 조회 중 오류가 발생했습니다: {str(e)}",
@@ -190,21 +191,34 @@ async def create_stamp(
 @router.get("/", response_model=List[StampResponse], status_code=status.HTTP_200_OK)
 async def get_stamp(
     user: User = Depends(get_current_active_user),
-) -> List[StampResponse]:
+) -> Optional[List[StampResponse]]:
     """
     Stamp 조회 엔드포인트
     """
-
-    stamps = await StampService.get_stamp_by_uid(user.id)
-    if not stamps:
-        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT)
-    stamps_response = [
-        StampResponse.timestamp_to_datestr(
-            id=stamp.id,
-            saved_at=stamp.saved_at,
-            save_url=stamp.save_url,
-            type=stamp.type,
+    try:
+        stamps = await StampService.get_stamp_by_uid(user.id)
+        if not stamps:
+            raise HTTPException(status_code=status.HTTP_204_NO_CONTENT)
+    except Exception as e:
+        print(f"ERROR: {traceback.format_exc()}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"스탬프 조회 중 오류가 발생했습니다: {str(e)}",
         )
-        for stamp in stamps
-    ]
-    return stamps_response
+    try:
+        stamps_response = [
+            StampResponse.timestamp_to_datestr(
+                id=stamp.id,
+                saved_at=stamp.saved_at,
+                save_url=stamp.save_url,
+                type=stamp.type,
+            )
+            for stamp in stamps
+        ]
+        return stamps_response
+    except Exception as e:
+        print(f"ERROR: {traceback.format_exc()}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"스탬프 응답 변환 중 오류가 발생했습니다: {str(e)}",
+        )
