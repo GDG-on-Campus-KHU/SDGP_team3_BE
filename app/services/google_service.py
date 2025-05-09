@@ -24,10 +24,47 @@ from app.services.user_service import UserService
 
 
 class GoogleAuthService:
+    # @staticmethod
+    # async def login_or_register(user_info: dict) -> str:
+    #     # 실제 DB 연동은 생략하고, 가짜 유저 객체 생성
+    #     fake_user = get_fake_user_info(user_info)
+
+    #     token = UserService.create_access_token(data={"sub": str(fake_user.id)})
+    #     return token
+
     @staticmethod
     async def login_or_register(user_info: dict) -> str:
-        # 실제 DB 연동은 생략하고, 가짜 유저 객체 생성
-        fake_user = get_fake_user_info(user_info)
+        email = user_info["email"]
+        username = user_info.get("name", "google_user")
 
-        token = UserService.create_access_token(data={"sub": str(fake_user.id)})
-        return token
+        user = await UserRepository.get_user_by_email(email)
+
+        if not user:
+            user = await UserRepository.create_user(
+                UserCreate(
+                    email=email,
+                    username=username,
+                    password="placeholder_google_oauth"
+                )
+            )
+            if not user : 
+                raise Exception("유저 생성 실패")
+
+        return UserService.create_access_token(data={"sub": str(user.email)})
+    
+    @staticmethod
+    async def get_or_create_user(email: str, username: str) -> User:
+        user = await UserRepository.get_user_by_email(email)
+
+        if not user:
+            user = await UserRepository.create_user(
+                UserCreate(
+                    email=email,
+                    username=username,
+                    password="placeholder_google_oauth"
+                )
+            )
+            if not user:
+                raise Exception("유저 생성 실패")
+
+        return user

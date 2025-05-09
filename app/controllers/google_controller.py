@@ -1,11 +1,13 @@
 import secrets
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, HTTPException, Request
 from starlette.responses import RedirectResponse
 
 from app.core.oauth import oauth
 from app.services.google_service import GoogleAuthService
+from app.services.user_service import UserService
+
 
 router = APIRouter(prefix="/api/google", tags=["Google Auth"])
 # localhost:8000/api/google
@@ -62,13 +64,43 @@ async def google_callback(request: Request) -> Dict[str, Any]:
     user_info = await oauth.google.userinfo(token=token)
     print("user_info:", user_info)
 
-    jwt_token = await GoogleAuthService.login_or_register(
-        {
-            "email": user_info.get("email"),
-            "name": user_info.get("name"),
-            "picture": user_info.get("picture"),
-            "sub": user_info.get("sub"),
-        }
-    )
+    # jwt_token = await GoogleAuthService.login_or_register(
+    #     {
+    #         "email": user_info.get("email"),
+    #         "name": user_info.get("name"),
+    #         "picture": user_info.get("picture"),
+    #         "sub": user_info.get("sub"),
+    #     }
+    # )
+    
+    email = user_info["email"]
+    username = user_info.get("name", "google_user")
 
-    return {"access_token": jwt_token, "token_type": "bearer"}
+    if not email:
+        raise HTTPException(status_code=400, detail="이메일 정보가 없습니다.")
+    
+    user = await GoogleAuthService.get_or_create_user(email=email, username=username)
+
+    access_token = UserService.create_access_token({"sub": str(user.email)})
+
+
+    return {"access_token": access_token, 
+            "token_type": "bearer",
+            "id": user.id}
+
+from pydantic import BaseModel
+
+class GoogleLoginRequest(BaseModel):
+    email: str
+    username: Optional[str] = "google_user"
+
+@router.post("/token", summary="Google 사용자용 access token 발급", tags=["Google Auth"])
+async def issue_google_token(body: GoogleLoginRequest):
+    user = await GoogleAuthService.get_or_create_user(
+        email=body.email,
+        username=body.username,
+    )
+    access_token = UserService.create_access_token(data={"sub": str(user.email)})
+    return {"access_token": access_token,
+            "token_type": "bearer",
+            "id": user.id}
