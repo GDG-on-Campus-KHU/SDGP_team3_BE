@@ -169,3 +169,18 @@ async def get_fake_decorations_by_id(user_id: int) -> Optional[List[Any]]:
             detail=f"ID가 {user_id}인 사용자를 찾을 수 없습니다.",
         )
     return decorations
+
+
+@router.get("/test", response_model=User)
+async def test_user(
+    uid: int,
+    current_user: User = Depends(get_current_active_user),
+) -> User:
+    """테스트용 엔드포인트"""
+    if uid != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="사용자 ID가 일치하지 않습니다.",
+        )
+
+    return current_user

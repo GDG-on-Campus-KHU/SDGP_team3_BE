@@ -31,9 +31,10 @@ from app.models.stamp_model import (
 from app.models.user_model import User
 from app.services.challenge_service import ChallengeService
 from app.services.stamp_service import StampService
+from app.services.vision_service import VisionService
 
 
-def mock_vision_api_verify(file: UploadFile, stamp_type: StampType) -> bool:
+def vision_api_verify(file: UploadFile, stamp_type: StampType) -> bool:
     """
     Mock Google Vision API verification function.
     In a real-world scenario, this function would call the Google Vision API to verify the stamp.
@@ -41,10 +42,12 @@ def mock_vision_api_verify(file: UploadFile, stamp_type: StampType) -> bool:
     # Simulate verification logic
     if stamp_type == StampType.ORDER_DETAILS:
         # Simulate verification logic for order details
-        return True if file.filename.endswith(".jpg") else False
+        res_od = VisionService.detect_spoon_fork_from_image(file=file)
+        return True if res_od == "X" else False
     elif stamp_type == StampType.TUMBLER:
         # Simulate verification logic for tumbler
-        return True if file.filename.endswith(".png") else False
+        res_tb = VisionService.detect_tumbler_in_image(file=file)
+        return True if res_tb == "Tumbler" else False
     else:
         # Invalid stamp type
         raise HTTPException(
@@ -94,9 +97,9 @@ async def create_stamp(
         )
 
     # 1. stamp_type에 따른 stamp 선인증 (google vision api)
-    mock_vision_api_verify_result = mock_vision_api_verify(file, stamp_type)
-    print(f"COMPLETED: mock_vision_api_verify_result: {mock_vision_api_verify_result}")
-    if not mock_vision_api_verify_result:
+    vision_api_verify_result = vision_api_verify(file, stamp_type)
+    print(f"COMPLETED: vision_api_verify_result: {vision_api_verify_result}")
+    if not vision_api_verify_result:
         raise HTTPException(
             status_code=status.HTTP_304_NOT_MODIFIED,
             detail="스탬프 인증에 실패하여 변화가 없습니다.",
@@ -164,6 +167,7 @@ async def create_stamp(
                 start_at=challenge.start_at,
                 due_at=challenge.due_at,
                 stamps=challenge.stamps,
+                type=StampType.ORDER_DETAILS if challenge.od_obj else StampType.TUMBLER,
             )
             for challenge in challenges_with_stamps
         ]

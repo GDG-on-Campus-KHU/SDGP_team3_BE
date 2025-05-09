@@ -158,6 +158,7 @@ class ChallengeCreateResponse(BaseModel):
     tb_ach: Optional[int] = Field(default=None, description="텀블로 도전 달성 수")
     start_at: Union[datetime, str] = Field(..., description="시작 날짜")
     due_at: Union[datetime, str] = Field(..., description="종료 날짜")
+    type: StampType = Field(..., description="스탬프에 따른 챌린지 타입")
 
     @classmethod
     def timestamp_to_datestr(
@@ -173,6 +174,7 @@ class ChallengeCreateResponse(BaseModel):
         tb_ach: Optional[int],
         start_at: datetime,
         due_at: datetime,
+        type: StampType,
     ) -> "ChallengeCreateResponse":
         """타임스탬프를 날짜(YYYY-MM-DD)로 변환하는 메서드"""
         # datetime 객체를 YYYY-MM-DD 형식의 문자열로 변환
@@ -188,6 +190,7 @@ class ChallengeCreateResponse(BaseModel):
             tb_ach=tb_ach,
             start_at=start_at.strftime("%Y-%m-%d"),
             due_at=due_at.strftime("%Y-%m-%d"),
+            type=type,
         )
 
 
