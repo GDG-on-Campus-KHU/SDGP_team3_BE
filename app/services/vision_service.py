@@ -4,6 +4,9 @@ from typing import Literal
 from fastapi import UploadFile
 from google.cloud import vision
 
+from google.cloud import vision
+from app.services.gemini_service import GeminiService
+
 # 기존 client = vision.ImageAnnotatorClient() 대신 다음과 같이 수정
 client = vision.ImageAnnotatorClient()
 print(f"client: {client.__dict__}")
@@ -37,28 +40,34 @@ class VisionService:
 
         return "Unknown"  # 기본 fallback
 
+    # @staticmethod
+    # def detect_tumbler_in_image(file: UploadFile) -> Literal["Tumbler", "Not Tumbler"]:
+    #     """이미지에 텀블러가 있는지 분석"""
+    #     image = vision.Image(content=file.file.read())
+    #     response = client.label_detection(image=image)
+    #     labels = [label.description.lower() for label in response.label_annotations]
+
+    #     print("라벨 결과 목록:", labels)
+
+    #     # 2차 수정
+    #     tumbler_keywords = ["tumbler", " bottle", "water bottle", "drinkware"]
+
+    #     if any(label in tumbler_keywords for label in labels):
+    #         return "Tumbler"
+
+    #     for label in labels:
+    #         similar = get_close_matches(label, tumbler_keywords, n=1, cutoff=0.8)
+    #         if similar:
+    #             return "Tumbler"
+    #     # 1차
+    #     # for label in labels:
+    #     #     if "tumbler" in label or "bottle" in label or "water bottle" in label:
+    #     #         return "Tumbler"
+
+    #     return "Not Tumbler"
+    
     @staticmethod
-    def detect_tumbler_in_image(file: UploadFile) -> Literal["Tumbler", "Not Tumbler"]:
-        """이미지에 텀블러가 있는지 분석"""
-        image = vision.Image(content=file.file.read())
-        response = client.label_detection(image=image)
-        labels = [label.description.lower() for label in response.label_annotations]
-
-        print("라벨 결과 목록:", labels)
-
-        # 2차 수정
-        tumbler_keywords = ["tumbler", " bottle", "water bottle", "drinkware"]
-
-        if any(label in tumbler_keywords for label in labels):
-            return "Tumbler"
-
-        for label in labels:
-            similar = get_close_matches(label, tumbler_keywords, n=1, cutoff=0.8)
-            if similar:
-                return "Tumbler"
-        # 1차
-        # for label in labels:
-        #     if "tumbler" in label or "bottle" in label or "water bottle" in label:
-        #         return "Tumbler"
-
-        return "Not Tumbler"
+    def detect_tumbler_in_image(image_path: str) -> Literal["Tumbler", "Not Tumbler"]:
+        """Gemini Vision 모델로 텀블러 인식"""
+        result = GeminiService.detect_tumbler(image_path)
+        return result

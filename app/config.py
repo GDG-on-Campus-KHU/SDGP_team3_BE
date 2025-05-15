@@ -48,5 +48,8 @@ class Settings(BaseSettings):
     # SESSION 미들웨어 설정
     SESSION_SECRET_KEY: str = os.getenv("SESSION_SECRET_KEY", "default-secret-key")
 
+    # Gemini
+    GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+
 
 settings = Settings()
