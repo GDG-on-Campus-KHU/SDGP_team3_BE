@@ -54,7 +54,7 @@ https://github.com/user-attachments/assets/1dac0d2a-e1bc-47c9-b7ce-8b18ebd95982
 # Install Poetry if not installed
 curl -sSL https://install.python-poetry.org | python3 -
 # Clone the repository
-git clone https://github.com/yourusername/SDGP_team3_BE.git
+git clone https://github.com/GDG-on-Campus-KHU/SDGP_team3_BE.git
 cd SDGP_team3_BE
 # Install Dependencies
 poetry install
