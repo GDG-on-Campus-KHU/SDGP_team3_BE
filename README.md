@@ -2,6 +2,8 @@
 
 Kkook is a gamification platform that encourages users to adopt environmentally friendly habits by reducing disposables and increasing tumbler usage.
 
+https://github.com/user-attachments/assets/1dac0d2a-e1bc-47c9-b7ce-8b18ebd95982
+
 ## Team Members
 - Euntae Kim (https://github.com/ket0825)
 - Junghwan Mun (https://github.com/jhmun0206)
