@@ -4,7 +4,7 @@ import uuid
 import os
 from typing import Literal
 from app.services.vision_service import detect_spoon_fork_from_image, detect_tumbler_in_image
-
+from app.services.gemini_service import VisionService
 
 # vision 관련 라우터
 router = APIRouter(
@@ -32,15 +32,16 @@ async def analyze_spoon_fork(file: UploadFile = File(...)) -> dict[str, Literal[
             os.remove(temp_file_name)
 
 
-@router.post("/tumbler", summary="텀블러 객체 탐지", response_model=dict)
+# Gemini 모델 사용
+@router.post("/tumbler", summary="텀블러 객체 탐지 (Gemini)", response_model=dict)
 async def detect_tumbler(file: UploadFile = File(...)) -> dict[str, Literal["Tumbler", "Not Tumbler"]]:
-    """Cloud Vision의 Label Detection으로 텀블러 객체 존재 여부 반환"""
+    """Gemini 모델로 텀블러 존재 여부 판단"""
     temp_file_name = f"temp_{uuid.uuid4().hex}.png"
     try:
         with open(temp_file_name, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-        result = detect_tumbler_in_image(temp_file_name)
+        result = VisionService.detect_tumbler_in_image(temp_file_name)
         return {"result": result}
 
     except Exception as e:
@@ -49,6 +50,25 @@ async def detect_tumbler(file: UploadFile = File(...)) -> dict[str, Literal["Tum
     finally:
         if os.path.exists(temp_file_name):
             os.remove(temp_file_name)
+
+# cloud vision api 사용
+# @router.post("/tumbler", summary="텀블러 객체 탐지", response_model=dict)
+# async def detect_tumbler(file: UploadFile = File(...)) -> dict[str, Literal["Tumbler", "Not Tumbler"]]:
+#     """Cloud Vision의 Label Detection으로 텀블러 객체 존재 여부 반환"""
+#     temp_file_name = f"temp_{uuid.uuid4().hex}.png"
+#     try:
+#         with open(temp_file_name, "wb") as buffer:
+#             shutil.copyfileobj(file.file, buffer)
+
+#         result = detect_tumbler_in_image(temp_file_name)
+#         return {"result": result}
+
+#     except Exception as e:
+#         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+#     finally:
+#         if os.path.exists(temp_file_name):
+#             os.remove(temp_file_name)
 
 
 

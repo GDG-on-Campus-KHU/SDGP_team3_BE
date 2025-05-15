@@ -16,6 +16,7 @@ from app.controllers import (
     google_controller,
     stamp_controller,
     user_controller,
+    vision_controller,
 )
 from app.database.database import init_db
 
@@ -48,7 +49,7 @@ app.include_router(decoration_controller.router)
 app.include_router(decoration_user_controller.router)
 app.include_router(challenge_controller.router)
 app.include_router(stamp_controller.router)
-
+app.include_router(vision_controller.router)
 
 @app.get("/")
 def read_root() -> dict:
